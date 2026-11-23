@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_foreign_purchase" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.foreign.purchase</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="purchase.res_config_settings_view_form_purchase"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='purchase']" position="inside">
+                <block title="Foreign Purchases" name="foreign_purchase_setting_container">
+                    <setting id="foreign_approval_bands" string="Approval bands" company_dependent="1"
+                        help="Import orders are approved in company currency. Up to the first amount: Department Manager. Above that, up to the second amount: Department Manager then Deputy General Manager. Above the second amount: those two, then the General Manager.">
+                        <field name="company_currency_id" invisible="1"/>
+                        <div class="content-group">
+                            <div class="row mt16">
+                                <label for="foreign_dm_limit" class="col-lg-5 o_light_label"/>
+                                <field name="foreign_dm_limit"/>
+                            </div>
+                            <div class="row">
+                                <label for="foreign_dgm_limit" class="col-lg-5 o_light_label"/>
+                                <field name="foreign_dgm_limit"/>
+                            </div>
+                            <div class="row">
+                                <label for="foreign_shipment_reminder_days" class="col-lg-5 o_light_label"/>
+                                <field name="foreign_shipment_reminder_days"/>
+                            </div>
+                            <div class="row">
+                                <label for="foreign_reminder_days" class="col-lg-5 o_light_label"/>
+                                <field name="foreign_reminder_days"/>
+                            </div>
+                            <div class="row">
+                                <label for="foreign_lc_deposit_account_id" class="col-lg-5 o_light_label"/>
+                                <field name="foreign_lc_deposit_account_id"/>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

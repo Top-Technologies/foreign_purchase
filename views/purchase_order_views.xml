@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="purchase_order_form_foreign" model="ir.ui.view">
+        <field name="name">purchase.order.form.foreign</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/field[@name='state']" position="before">
+                <button name="action_submit_import_approval" type="object" string="Submit for Approval"
+                    class="oe_highlight"
+                    invisible="purchase_type != 'import' or state not in ('draft', 'sent') or import_approval_state != 'draft'"/>
+                <button name="action_approve_import" type="object" string="Approve"
+                    class="oe_highlight"
+                    invisible="not can_approve_import"/>
+                <button name="action_reset_import_approval" type="object" string="Reset Approval"
+                    groups="purchase.group_purchase_manager"
+                    invisible="purchase_type != 'import' or state not in ('draft', 'sent', 'to approve') or import_approval_state == 'draft'"/>
+                <button name="action_register_lc_deposit" type="object" string="Register Deposit"
+                    groups="account.group_account_invoice"
+                    invisible="purchase_type != 'import' or import_payment_method != 'lc' or state not in ('purchase', 'done') or file_closed or lc_deposit_move_id"/>
+                <button name="action_settle_lc" type="object" string="Settle LC"
+                    groups="account.group_account_invoice"
+                    invisible="purchase_type != 'import' or import_payment_method != 'lc' or state not in ('purchase', 'done') or lc_settlement_move_id"/>
+                <button name="action_settle_foreign_payment" type="object" string="Settle Payment"
+                    groups="account.group_account_invoice"
+                    invisible="purchase_type != 'import' or import_payment_method not in ('tt', 'cad') or state not in ('purchase', 'done') or lc_settlement_move_id"/>
+                <button name="action_cancel_lc_balance" type="object" string="Cancel LC Balance"
+                    groups="account.group_account_invoice"
+                    invisible="purchase_type != 'import' or import_payment_method != 'lc' or state not in ('purchase', 'done') or lc_cancel_move_id"/>
+                <button name="action_print_utilization_letter" type="object" string="Utilization Letter"
+                    invisible="purchase_type != 'import' or import_payment_method != 'lc' or state not in ('purchase', 'done')"/>
+                <button name="action_mark_utilization_sent" type="object" string="Mark Utilization Sent"
+                    invisible="purchase_type != 'import' or import_payment_method != 'lc' or utilization_sent or state not in ('purchase', 'done')"/>
+                <button name="action_create_landed_cost" type="object" string="Landed Cost"
+                    invisible="purchase_type != 'import' or state not in ('purchase', 'done') or not can_create_landed_cost or file_closed"/>
+                <button name="action_close_import_file" type="object" string="Close File"
+                    invisible="purchase_type != 'import' or state not in ('purchase', 'done') or file_closed"/>
+                <button name="action_reopen_import_file" type="object" string="Reopen File"
+                    groups="purchase.group_purchase_manager"
+                    invisible="not file_closed"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button type="object" name="action_view_landed_costs" class="oe_stat_button" icon="fa-cubes"
+                    invisible="landed_cost_count == 0">
+                    <field name="landed_cost_count" widget="statinfo" string="Landed Costs"/>
+                </button>
+            </xpath>
+            <xpath expr="//sheet" position="before">
+                <field name="can_approve_import" invisible="1"/>
+                <field name="can_create_landed_cost" invisible="1"/>
+                <div class="alert alert-info" role="alert" invisible="purchase_type != 'import' or not import_approval_text">
+                    Approvers see the foreign amount and the rate: <field name="import_approval_text" nolabel="1" class="oe_inline"/>.
+                </div>
+                <div class="alert alert-warning" role="alert"
+                    invisible="purchase_type != 'import' or landed_cost_status != 'pending'">
+                    These goods are in the warehouse. Validate the landed cost before anyone issues them. The file can be closed after the receipt.
+                </div>
+            </xpath>
+            <xpath expr="//field[@name='partner_ref']" position="after">
+                <field name="purchase_type" readonly="state in ('purchase', 'done', 'cancel')"/>
+            </xpath>
+            <xpath expr="//page[@name='purchase_delivery_invoice']" position="before">
+                <page string="Import / LC" name="import_lc" invisible="purchase_type != 'import'">
+                    <group>
+                        <group string="Payment">
+                            <field name="import_payment_method" readonly="file_closed"/>
+                            <field name="incoterm_id" readonly="file_closed"/>
+                            <field name="import_officer_id" widget="many2one_avatar_user" readonly="file_closed"/>
+                            <field name="import_approval_state"/>
+                            <field name="landed_cost_status"/>
+                            <field name="requisition_id" readonly="1"/>
+                            <field name="company_currency_id" invisible="1"/>
+                            <field name="lc_settlement_rate" invisible="import_payment_method not in ('tt', 'cad')" readonly="lc_settlement_move_id"/>
+                            <field name="lc_exchange_difference" invisible="import_payment_method not in ('tt', 'cad')"/>
+                            <field name="lc_settlement_move_id" invisible="import_payment_method not in ('tt', 'cad')"/>
+                        </group>
+                        <group string="Letter of credit" invisible="import_payment_method != 'lc'">
+                            <field name="lc_number" readonly="file_closed"/>
+                            <field name="lc_opening_date" readonly="file_closed"/>
+                            <field name="lc_latest_shipment_date" readonly="file_closed"/>
+                            <field name="lc_expiry_date" readonly="file_closed"/>
+                            <field name="lc_deposit_percent" readonly="file_closed"/>
+                            <field name="lc_deposit_amount" readonly="file_closed"/>
+                            <field name="deposit_company_amount"/>
+                            <field name="lc_deposit_open"/>
+                            <field name="lc_deposit_move_id"/>
+                            <field name="balance_foreign_amount"/>
+                            <field name="lc_settlement_rate" readonly="lc_settlement_move_id"/>
+                            <field name="lc_exchange_difference"/>
+                            <field name="lc_settlement_move_id"/>
+                            <field name="lc_cancelled_amount" readonly="lc_cancel_move_id"/>
+                            <field name="lc_cancel_move_id"/>
+                        </group>
+                    </group>
+                    <group string="Shipment">
+                        <group>
+                            <field name="expected_arrival_date" readonly="file_closed"/>
+                            <field name="shipment_reference" readonly="file_closed"/>
+                            <field name="shipment_note" readonly="file_closed"/>
+                        </group>
+                        <group string="Documents">
+                            <field name="doc_bill_of_lading" readonly="file_closed"/>
+                            <field name="doc_packing_list" readonly="file_closed"/>
+                            <field name="doc_commercial_invoice" readonly="file_closed"/>
+                            <field name="doc_certificate_of_origin" readonly="file_closed"/>
+                            <field name="doc_insurance" readonly="file_closed"/>
+                            <field name="doc_duty" readonly="file_closed"/>
+                            <field name="doc_clearing" readonly="file_closed"/>
+                            <field name="doc_customs_declaration" readonly="file_closed"/>
+                            <field name="utilization_letter" filename="utilization_letter_name" readonly="file_closed"/>
+                            <field name="utilization_letter_name" invisible="1"/>
+                            <field name="utilization_sent"/>
+                            <field name="utilization_date"/>
+                            <field name="file_closed"/>
+                            <field name="file_closed_date"/>
+                        </group>
+                    </group>
+                    <separator string="Supplier comparison"/>
+                    <button name="action_load_supplier_comparison" type="object" string="Load supplier quotes" class="btn-secondary"/>
+                    <field name="comparison_ids" readonly="file_closed">
+                        <list editable="bottom">
+                            <field name="partner_id"/>
+                            <field name="currency_id"/>
+                            <field name="amount_total"/>
+                            <field name="incoterm_id"/>
+                            <field name="source_order_id" optional="show"/>
+                            <field name="selected"/>
+                            <field name="note"/>
+                            <field name="company_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                    <p class="text-muted">
+                        Tick the supplier you chose. The tick records the choice. Confirm the purchase order itself in the usual way.
+                    </p>
+                    <separator string="Third-party claims"/>
+                    <field name="claim_ids" readonly="file_closed">
+                        <list editable="bottom">
+                            <field name="claim_against"/>
+                            <field name="partner_id"/>
+                            <field name="description"/>
+                            <field name="amount"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="state"/>
+                        </list>
+                    </field>
+                    <separator string="Goods discrepancy"/>
+                    <field name="discrepancy_ids" readonly="file_closed">
+                        <list editable="bottom">
+                            <field name="product_id"/>
+                            <field name="qty_received"/>
+                            <field name="qty_passed"/>
+                            <field name="qty_damaged"/>
+                            <field name="weight_difference"/>
+                            <field name="note"/>
+                            <field name="photo" filename="photo_name" optional="hide"/>
+                            <field name="photo_name" column_invisible="1"/>
+                            <field name="quarantine_picking_id" optional="show"/>
+                            <button name="action_send_to_quarantine" type="object" string="Quarantine"
+                                invisible="qty_damaged &lt;= 0 or quarantine_picking_id"/>
+                        </list>
+                    </field>
+                    <p class="text-muted" invisible="import_payment_method not in ('lc', 'tt', 'cad')">
+                        Settle LC, Settle Payment for a bank wire, and Settle Payment for cash against documents
+                        post the exchange difference on the whole foreign bill.
+                        A bill of 6,000 at 150, settled at 152, gives a loss of 12,000 in company currency.
+                        For a letter of credit the bank is charged only the part not already covered by the birr deposit.
+                        That loss stays on the finance result and is not added to the product cost.
+                    </p>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="purchase_order_tree_foreign" model="ir.ui.view">
+        <field name="name">purchase.order.list.foreign</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="purchase_type" optional="hide"/>
+                <field name="lc_number" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_purchase_order_filter_foreign" model="ir.ui.view">
+        <field name="name">purchase.order.search.foreign</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.view_purchase_order_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='origin']" position="after">
+                <field name="purchase_type"/>
+                <field name="lc_number"/>
+                <field name="import_payment_method"/>
+            </xpath>
+            <xpath expr="//filter[@name='approved']" position="after">
+                <filter name="foreign_imports" string="Imports" domain="[('purchase_type', '=', 'import')]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="purchase_order_foreign_tree" model="ir.ui.view">
+        <field name="name">purchase.order.foreign.list</field>
+        <field name="model">purchase.order</field>
+        <field name="arch" type="xml">
+            <list string="Foreign Purchases" decoration-muted="file_closed or state == 'cancel'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="date_order"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="amount_total"/>
+                <field name="import_payment_method"/>
+                <field name="lc_number"/>
+                <field name="lc_expiry_date"/>
+                <field name="lc_deposit_amount"/>
+                <field name="import_approval_state"/>
+                <field name="landed_cost_status"/>
+                <field name="state"/>
+                <field name="file_closed" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="purchase_order_foreign_search" model="ir.ui.view">
+        <field name="name">purchase.order.foreign.search</field>
+        <field name="model">purchase.order</field>
+        <field name="arch" type="xml">
+            <search string="Foreign Purchases">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="lc_number"/>
+                <field name="user_id"/>
+                <field name="import_officer_id"/>
+                <filter name="open_files" string="Open files" domain="[('file_closed', '=', False), ('state', '!=', 'cancel')]"/>
+                <filter name="waiting_approval" string="Waiting for approval" domain="[('import_approval_state', 'in', ('dm', 'dgm', 'gm'))]"/>
+                <filter name="landed_pending" string="Landed cost still open" domain="[('landed_cost_status', '=', 'pending')]"/>
+                <filter name="lc_missing_deposit" string="Deposit not recorded" domain="[('import_payment_method', '=', 'lc'), ('lc_deposit_move_id', '=', False), ('state', 'in', ('purchase', 'done'))]"/>
+                <group>
+                    <filter name="group_payment" string="Payment Method" context="{'group_by': 'import_payment_method'}"/>
+                    <filter name="group_approval" string="Approval" context="{'group_by': 'import_approval_state'}"/>
+                    <filter name="group_vendor" string="Vendor" context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_foreign_purchases" model="ir.actions.act_window">
+        <field name="name">Foreign Purchases</field>
+        <field name="res_model">purchase.order</field>
+        <field name="view_mode">list,form,activity</field>
+        <field name="domain">[('purchase_type', '=', 'import')]</field>
+        <field name="search_view_id" ref="purchase_order_foreign_search"/>
+        <field name="context">{'default_purchase_type': 'import'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create an import order
+            </p>
+            <p>
+                Foreign purchases stay on this list. Set the currency to USD, the Incoterm to FOB,
+                and fill the Import / LC tab after the order is approved.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_foreign_purchases_view_list" model="ir.actions.act_window.view">
+        <field name="sequence">1</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="purchase_order_foreign_tree"/>
+        <field name="act_window_id" ref="action_foreign_purchases"/>
+    </record>
+
+    <menuitem id="menu_foreign_purchases"
+        name="Foreign Purchases"
+        parent="purchase.menu_procurement_management"
+        action="action_foreign_purchases"
+        sequence="4"/>
+
+    <record id="purchase_order_lc_report_tree" model="ir.ui.view">
+        <field name="name">purchase.order.lc.report.list</field>
+        <field name="model">purchase.order</field>
+        <field name="arch" type="xml">
+            <list string="Letters of credit" create="false">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="lc_number"/>
+                <field name="lc_opening_date"/>
+                <field name="lc_latest_shipment_date"/>
+                <field name="lc_expiry_date"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="company_currency_id" column_invisible="1"/>
+                <field name="amount_total"/>
+                <field name="deposit_company_amount"/>
+                <field name="lc_deposit_open"/>
+                <field name="lc_exchange_difference"/>
+                <field name="lc_cancelled_amount"/>
+                <field name="file_closed"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_report_open_lcs" model="ir.actions.act_window">
+        <field name="name">Open letters of credit</field>
+        <field name="res_model">purchase.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="purchase_order_lc_report_tree"/>
+        <field name="domain">[('purchase_type', '=', 'import'), ('import_payment_method', '=', 'lc'), ('lc_settlement_move_id', '=', False), ('state', '!=', 'cancel')]</field>
+        <field name="context">{'create': False}</field>
+    </record>
+
+    <record id="action_report_lc_deposits" model="ir.actions.act_window">
+        <field name="name">LC deposits</field>
+        <field name="res_model">purchase.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="purchase_order_lc_report_tree"/>
+        <field name="domain">[('purchase_type', '=', 'import'), ('lc_deposit_move_id', '!=', False)]</field>
+        <field name="context">{'create': False}</field>
+    </record>
+
+    <menuitem id="menu_report_open_lcs"
+        name="Open letters of credit"
+        parent="purchase.purchase_report_main"
+        action="action_report_open_lcs"
+        sequence="40"/>
+    <menuitem id="menu_report_lc_deposits"
+        name="LC deposits"
+        parent="purchase.purchase_report_main"
+        action="action_report_lc_deposits"
+        sequence="41"/>
+</odoo>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="stock_landed_cost_import_tree" model="ir.ui.view">
+        <field name="name">stock.landed.cost.import.list</field>
+        <field name="model">stock.landed.cost</field>
+        <field name="arch" type="xml">
+            <list string="Landed costs" create="false">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="import_order_id"/>
+                <field name="import_vendor_id"/>
+                <field name="amount_total"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_report_import_landed_costs" model="ir.actions.act_window">
+        <field name="name">Landed costs</field>
+        <field name="res_model">stock.landed.cost</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="stock_landed_cost_import_tree"/>
+        <field name="domain">[('is_import', '=', True)]</field>
+        <field name="context">{'create': False}</field>
+    </record>
+
+    <menuitem id="menu_report_import_landed_costs"
+        name="Landed costs"
+        parent="purchase.purchase_report_main"
+        action="action_report_import_landed_costs"
+        groups="stock.group_stock_manager,foreign_purchase.group_foreign_finance"
+        sequence="39"/>
+</odoo>

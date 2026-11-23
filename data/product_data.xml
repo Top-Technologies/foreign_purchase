@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_category_imported_goods" model="product.category">
+        <field name="name">Imported Goods</field>
+        <field name="parent_id" ref="product.product_category_goods"/>
+    </record>
+
+    <record id="product_freight" model="product.template">
+        <field name="name">Freight</field>
+        <field name="default_code">FP-FREIGHT</field>
+        <field name="type">service</field>
+        <field name="purchase_ok" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="landed_cost_ok" eval="True"/>
+        <field name="split_method_landed_cost">by_quantity</field>
+        <field name="categ_id" ref="product.product_category_services"/>
+        <field name="description_purchase">Bill freight in company currency, then add it on the landed cost of the import receipt.</field>
+    </record>
+    <record id="product_insurance" model="product.template">
+        <field name="name">Insurance</field>
+        <field name="default_code">FP-INSURANCE</field>
+        <field name="type">service</field>
+        <field name="purchase_ok" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="landed_cost_ok" eval="True"/>
+        <field name="split_method_landed_cost">by_quantity</field>
+        <field name="categ_id" ref="product.product_category_services"/>
+        <field name="description_purchase">Bill insurance in company currency, then add it on the landed cost of the import receipt.</field>
+    </record>
+    <record id="product_duty" model="product.template">
+        <field name="name">Duty</field>
+        <field name="default_code">FP-DUTY</field>
+        <field name="type">service</field>
+        <field name="purchase_ok" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="landed_cost_ok" eval="True"/>
+        <field name="split_method_landed_cost">by_quantity</field>
+        <field name="categ_id" ref="product.product_category_services"/>
+        <field name="description_purchase">Bill duty in company currency, then add it on the landed cost of the import receipt.</field>
+    </record>
+    <record id="product_port_storage" model="product.template">
+        <field name="name">Port storage</field>
+        <field name="default_code">FP-STORAGE</field>
+        <field name="type">service</field>
+        <field name="purchase_ok" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="landed_cost_ok" eval="True"/>
+        <field name="split_method_landed_cost">by_quantity</field>
+        <field name="categ_id" ref="product.product_category_services"/>
+        <field name="description_purchase">Bill port storage in company currency. Record it as a third-party claim, then add it on the landed cost only if it is part of the item cost.</field>
+    </record>
+    <record id="product_clearing" model="product.template">
+        <field name="name">Clearing</field>
+        <field name="default_code">FP-CLEARING</field>
+        <field name="type">service</field>
+        <field name="purchase_ok" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="landed_cost_ok" eval="True"/>
+        <field name="split_method_landed_cost">by_quantity</field>
+        <field name="categ_id" ref="product.product_category_services"/>
+        <field name="description_purchase">Bill clearing in company currency, then add it on the landed cost of the import receipt.</field>
+    </record>
+
+    <function model="product.category" name="_foreign_purchase_configure_imported_goods"/>
+</odoo>
