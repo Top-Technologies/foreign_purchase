@@ -147,7 +147,7 @@ class PurchaseOrder(models.Model):
         'order_id',
         string='Goods discrepancy reports',
     )
-    requisition_id = fields.Many2one(
+    foreign_requisition_id = fields.Many2one(
         'foreign.purchase.requisition',
         string='Warehouse requisition',
         copy=False,
@@ -766,9 +766,9 @@ class PurchaseOrder(models.Model):
                 ('company_id', '=', self.company_id.id),
                 ('order_line.product_id', 'in', products.ids),
             ])
-        if self.requisition_id:
+        if self.foreign_requisition_id:
             others |= self.search([
-                ('requisition_id', '=', self.requisition_id.id),
+                ('foreign_requisition_id', '=', self.foreign_requisition_id.id),
                 ('id', '!=', self.id),
                 ('state', '!=', 'cancel'),
             ])

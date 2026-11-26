@@ -1,6 +1,6 @@
 {
     'name': 'Foreign Purchase',
-    'version': '19.0.1.5.0',
+    'version': '19.0.1.6.0',
     'category': 'Supply Chain/Purchase',
     'summary': 'Import orders, letter of credit, approval bands, and landed cost hold',
     'description': """

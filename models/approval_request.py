@@ -22,7 +22,7 @@ class ApprovalRequest(models.Model):
             orders = request.product_line_ids.purchase_order_line_id.order_id
             if not orders:
                 continue
-            orders.write({'requisition_id': request.foreign_requisition_id.id})
+            orders.write({'foreign_requisition_id': request.foreign_requisition_id.id})
             request.foreign_requisition_id.write({
                 'purchase_order_ids': [fields.Command.link(order.id) for order in orders],
                 'state': 'ordered',
